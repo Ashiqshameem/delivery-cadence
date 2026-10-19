@@ -1,0 +1,968 @@
+<title>Delivery Cadence</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#f6f3ec;
+    --surface:#ffffff;
+    --surface-2:#efe9db;
+    --border:#ddd4c1;
+    --text:#221f1a;
+    --text-muted:#6c6455;
+    --accent:#a8631f;
+    --accent-soft:#efe0c9;
+    --link:#2f5aa0;
+    --good:#1c8a5c;
+    --good-bg:#dff1e6;
+    --occasional:#7a7263;
+    --occasional-bg:#eae4d6;
+    --chip-bg:#eee8da;
+    --chip-top-bg:#f4d9a8;
+    --warn:#a8461f;
+    --shadow: 0 1px 2px rgba(30,25,15,0.06), 0 8px 24px rgba(30,25,15,0.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#10161e;
+      --surface:#171f29;
+      --surface-2:#1d2733;
+      --border:#2a3644;
+      --text:#e9edf1;
+      --text-muted:#8d97a4;
+      --accent:#e8a94d;
+      --accent-soft:#3a2f1c;
+      --link:#7fa5e8;
+      --good:#49c98c;
+      --good-bg:#173327;
+      --occasional:#9aa3ad;
+      --occasional-bg:#212b36;
+      --chip-bg:#212b36;
+      --chip-top-bg:#4a3a1d;
+      --warn:#e8825a;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#10161e;
+    --surface:#171f29;
+    --surface-2:#1d2733;
+    --border:#2a3644;
+    --text:#e9edf1;
+    --text-muted:#8d97a4;
+    --accent:#e8a94d;
+    --accent-soft:#3a2f1c;
+    --link:#7fa5e8;
+    --good:#49c98c;
+    --good-bg:#173327;
+    --occasional:#9aa3ad;
+    --occasional-bg:#212b36;
+    --chip-bg:#212b36;
+    --chip-top-bg:#4a3a1d;
+    --warn:#e8825a;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Manrope',system-ui,-apple-system,sans-serif;
+    padding-inline:16px;
+    padding-block:32px;
+  }
+  .wrap{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:28px;}
+
+  .masthead{display:flex;flex-direction:column;gap:6px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--accent);
+    font-weight:600;
+  }
+  h1{
+    font-size:clamp(26px,4vw,34px);
+    line-height:1.15;
+    margin:0;
+    font-weight:800;
+    letter-spacing:-0.01em;
+    text-wrap:balance;
+  }
+  .sub{
+    color:var(--text-muted);
+    font-size:15px;
+    line-height:1.55;
+    max-width:640px;
+    margin:0;
+  }
+
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .panel-label{
+    font-size:13px;
+    font-weight:700;
+    color:var(--text-muted);
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .panel-label .hint{font-weight:400;font-size:12.5px;}
+
+  textarea{
+    width:100%;
+    min-height:180px;
+    max-height:340px;
+    resize:vertical;
+    background:var(--surface-2);
+    color:var(--text);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px 14px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    line-height:1.6;
+    white-space:pre;
+    overflow:auto;
+  }
+  textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
+
+  .client-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+  .toggle-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+  .toggle-label{font-size:13px;font-weight:700;color:var(--text-muted);}
+  .seg-toggle{
+    display:inline-flex;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:3px;
+    gap:2px;
+  }
+  .seg-btn{
+    font-family:'Manrope',sans-serif;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--text-muted);
+    background:transparent;
+    border:none;
+    border-radius:999px;
+    padding:6px 13px;
+    cursor:pointer;
+  }
+  .seg-btn:hover{color:var(--text);}
+  .seg-btn.active{background:var(--accent);color:#211505;}
+  :root:not([data-theme="light"]) .seg-btn.active,:root[data-theme="dark"] .seg-btn.active{color:#241a06;}
+
+  .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  button{
+    font-family:'Manrope',sans-serif;
+    font-size:14px;
+    font-weight:700;
+    border-radius:9px;
+    padding:10px 18px;
+    border:1px solid transparent;
+    cursor:pointer;
+  }
+  button:focus-visible{outline:2px solid var(--link);outline-offset:2px;}
+  .btn-primary{background:var(--accent);color:#211505;}
+  .btn-primary:hover{filter:brightness(1.06);}
+  :root:not([data-theme="light"]) .btn-primary,:root[data-theme="dark"] .btn-primary{color:#241a06;}
+  .btn-ghost{background:transparent;color:var(--text-muted);border-color:var(--border);}
+  .btn-ghost:hover{color:var(--text);}
+
+  .method{
+    font-size:12.5px;
+    color:var(--text-muted);
+    line-height:1.55;
+    border-top:1px dashed var(--border);
+    padding-top:12px;
+  }
+  .method[hidden]{display:none;}
+  .method b{color:var(--text);}
+
+  #output{display:flex;flex-direction:column;gap:20px;}
+
+  .run-summary{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    color:var(--text-muted);
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .run-summary .warn{color:var(--warn);}
+
+  .empty{color:var(--text-muted);font-size:14px;padding:8px 2px;}
+
+  .dataset-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .dataset-head{display:flex;flex-direction:column;gap:2px;}
+  .dataset-head h2{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:18px;
+    font-weight:600;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .dataset-meta{font-size:12.5px;color:var(--text-muted);}
+
+  .table-scroll{overflow-x:auto;}
+  table.hour-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px;}
+  table.hour-table th{
+    text-align:left;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--text-muted);
+    font-weight:700;
+    padding:0 10px 8px;
+    border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  table.hour-table td{
+    padding:10px 10px;
+    border-bottom:1px solid var(--border);
+    vertical-align:middle;
+  }
+  table.hour-table tr:last-child td{border-bottom:none;}
+
+  .hour-cell{font-family:'IBM Plex Mono',monospace;white-space:nowrap;}
+  .hour-num{font-size:17px;font-weight:700;}
+  .hour-suffix{font-size:11.5px;color:var(--text-muted);margin-left:2px;}
+
+  .days-cell{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;min-width:110px;}
+
+  .corr-cell{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--text-muted);}
+  .corr-cell.has-corr{color:var(--warn);font-weight:600;}
+  .corr-note{display:block;font-family:'Manrope',sans-serif;font-weight:400;font-size:11px;color:var(--text-muted);margin-top:2px;}
+  .bar-track{
+    margin-top:5px;
+    height:5px;
+    border-radius:4px;
+    background:var(--surface-2);
+    overflow:hidden;
+    width:100%;
+    max-width:100px;
+  }
+  .bar-fill{height:100%;background:var(--accent);border-radius:4px;}
+
+  .badge{
+    display:inline-block;
+    font-size:11.5px;
+    font-weight:700;
+    padding:3px 9px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+  .badge.good{background:var(--good-bg);color:var(--good);}
+  .badge.occasional{background:var(--occasional-bg);color:var(--occasional);}
+
+  .chips-cell{min-width:180px;}
+  .chip{
+    display:inline-flex;
+    align-items:baseline;
+    gap:3px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    background:var(--chip-bg);
+    color:var(--text);
+    border-radius:6px;
+    padding:2px 7px;
+    margin:2px 4px 2px 0;
+  }
+  .chip-top{background:var(--chip-top-bg);font-weight:600;}
+  .chip-count{color:var(--text-muted);font-size:11px;}
+
+  .typical-cell{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:15px;white-space:nowrap;}
+  .typical-note{display:block;font-family:'Manrope',sans-serif;font-weight:400;font-size:11px;color:var(--text-muted);margin-top:2px;}
+
+  details.problems{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 16px;
+    font-size:12.5px;
+    color:var(--text-muted);
+  }
+  details.problems summary{cursor:pointer;font-weight:700;color:var(--text);}
+  .problem-line{font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:6px 0;border-top:1px solid var(--border);word-break:break-all;}
+</style>
+
+<div class="wrap">
+  <div class="masthead">
+    <div class="eyebrow">Schedule detection</div>
+    <h1>Delivery Cadence</h1>
+    <p class="sub">Paste rows copied straight from the delivery log. It groups them by dataset, finds which hour actually repeats day after day, and shows the model count that normally goes with it — so a real schedule stands out from one-off corrections.</p>
+  </div>
+
+  <div class="client-row">
+    <span class="toggle-label">Client</span>
+    <div class="seg-toggle" id="clientToggle">
+      <button type="button" class="seg-btn active" data-client="ENI">ENI</button>
+      <button type="button" class="seg-btn" data-client="BKW">BKW</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">
+      <span>Paste delivery rows</span>
+      <span class="hint">Multiple datasets in one paste are fine — they're split out automatically.</span>
+    </div>
+    <textarea id="input" spellcheck="false">ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+18/09/2026 01:00:06 (Fri)
+→ delivered +12m 19s
+MV_PROD/RETENTION/RAW_DATA/2026/9/18/1/ICE_EUA_FUT_20260918010006778.json (22.7 KB)
+20	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+17/09/2026 20:00:08 (Thu)
+→ delivered +16m 36s
+MV_PROD/RETENTION/RAW_DATA/2026/9/17/20/ICE_EUA_FUT_20260917200007914.json (246.5 KB)
+36	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+17/09/2026 19:01:34 (Thu)
+→ delivered +5m 42s
+MV_PROD/RETENTION/RAW_DATA/2026/9/17/19/ICE_EUA_FUT_20260917190133656.json (246.5 KB)
+36	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+17/09/2026 19:01:32 (Thu)
+→ delivered +5m 44s
+MV_PROD/RETENTION/RAW_DATA/2026/9/17/19/ICE_EUA_FUT_20260917190131591.json (377.4 KB)
+36	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+17/09/2026 17:00:01 (Thu)
+→ delivered +6m 3s
+MV_PROD/RETENTION/RAW_DATA/2026/9/17/17/ICE_EUA_FUT_20260917170000820.json (2.8 KB)
+4	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+17/09/2026 12:00:00 (Thu)
+→ delivered +5m 5s
+MV_PROD/RETENTION/RAW_DATA/2026/9/17/12/ICE_EUA_FUT_20260917120000511.json (12.1 KB)
+17	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+17/09/2026 11:00:01 (Thu)
+→ delivered +3m 58s
+MV_PROD/RETENTION/RAW_DATA/2026/9/17/11/ICE_EUA_FUT_20260917110000882.json (26.5 KB)
+37	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+17/09/2026 04:04:13 (Thu)
+→ delivered +3m 22s
+MV_PROD/RETENTION/RAW_DATA/2026/9/17/4/ICE_EUA_FUT_20260917040413090.json (12.1 KB)
+13	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+17/09/2026 01:00:05 (Thu)
+→ delivered +7m 26s
+MV_PROD/RETENTION/RAW_DATA/2026/9/17/1/ICE_EUA_FUT_20260917010005448.json (18.4 KB)
+22	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+16/09/2026 19:00:02 (Wed)
+→ delivered +6m 32s
+MV_PROD/RETENTION/RAW_DATA/2026/9/16/19/ICE_EUA_FUT_20260916190002058.json (246.5 KB)
+36	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+16/09/2026 19:00:01 (Wed)
+→ delivered +6m 32s
+MV_PROD/RETENTION/RAW_DATA/2026/9/16/19/ICE_EUA_FUT_20260916190001202.json (500.2 KB)
+36	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+16/09/2026 11:00:03 (Wed)
+→ delivered +3m 25s
+MV_PROD/RETENTION/RAW_DATA/2026/9/16/11/ICE_EUA_FUT_20260916110003081.json (18.6 KB)
+24	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+16/09/2026 11:00:00 (Wed)
+→ delivered +3m 28s
+MV_PROD/RETENTION/RAW_DATA/2026/9/16/11/ICE_EUA_FUT_20260916110000594.json (5.7 KB)
+8	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+16/09/2026 01:00:05 (Wed)
+→ delivered +7m 53s
+MV_PROD/RETENTION/RAW_DATA/2026/9/16/1/ICE_EUA_FUT_20260916010005745.json (29.7 KB)
+22	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+15/09/2026 19:02:33 (Tue)
+→ delivered +9m 28s
+MV_PROD/RETENTION/RAW_DATA/2026/9/15/19/ICE_EUA_FUT_20260915190233033.json (505.8 KB)
+36	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+15/09/2026 18:00:03 (Tue)
+→ delivered +27m 36s
+MV_PROD/RETENTION/RAW_DATA/2026/9/15/18/ICE_EUA_FUT_20260915180002916.json (249.3 KB)
+36	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+15/09/2026 11:00:01 (Tue)
+→ delivered +3m 3s
+MV_PROD/RETENTION/RAW_DATA/2026/9/15/11/ICE_EUA_FUT_20260915110000764.json (26.5 KB)
+37	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+15/09/2026 10:00:01 (Tue)
+→ delivered +2m 40s
+MV_PROD/RETENTION/RAW_DATA/2026/9/15/10/ICE_EUA_FUT_20260915100001207.json (6.4 KB)
+9	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+15/09/2026 07:00:01 (Tue)
+→ delivered +2m 38s
+MV_PROD/RETENTION/RAW_DATA/2026/9/15/7/ICE_EUA_FUT_20260915070001001.json (17.1 KB)
+15	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+15/09/2026 05:00:01 (Tue)
+→ delivered +2m 38s
+MV_PROD/RETENTION/RAW_DATA/2026/9/15/5/ICE_EUA_FUT_20260915050001345.json (15.7 KB)
+17	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+15/09/2026 02:00:03 (Tue)
+→ delivered +4m 13s
+MV_PROD/RETENTION/RAW_DATA/2026/9/15/2/ICE_EUA_FUT_20260915020002639.json (14.9 KB)
+18	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+15/09/2026 00:00:02 (Tue)
+→ delivered +14m 57s
+MV_PROD/RETENTION/RAW_DATA/2026/9/14/23/ICE_EUA_FUT_20260915000002144.json (9.9 KB)
+8	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+14/09/2026 19:00:01 (Mon)
+→ delivered +12m 39s
+MV_PROD/RETENTION/RAW_DATA/2026/9/14/19/ICE_EUA_FUT_20260914190001024.json (502.9 KB)
+36	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+14/09/2026 17:00:03 (Mon)
+→ delivered +6m 9s
+MV_PROD/RETENTION/RAW_DATA/2026/9/14/17/ICE_EUA_FUT_20260914170003388.json (247.9 KB)
+36	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+14/09/2026 11:00:01 (Mon)
+→ delivered +3m 8s
+MV_PROD/RETENTION/RAW_DATA/2026/9/14/11/ICE_EUA_FUT_20260914110000778.json (32.2 KB)
+45	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+13/09/2026 23:02:49 (Sun)
+→ delivered +5m 29s
+MV_PROD/RETENTION/RAW_DATA/2026/9/13/23/ICE_EUA_FUT_20260913230249156.json (14.2 KB)
+20	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+11/09/2026 19:00:22 (Fri)
+→ delivered +6m 25s
+MV_PROD/RETENTION/RAW_DATA/2026/9/11/19/ICE_EUA_FUT_20260911190021584.json (247.9 KB)
+36	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+11/09/2026 19:00:10 (Fri)
+→ delivered +6m 37s
+MV_PROD/RETENTION/RAW_DATA/2026/9/11/19/ICE_EUA_FUT_20260911190009736.json (503.0 KB)
+36	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+11/09/2026 11:02:07 (Fri)
+→ delivered +2m 27s
+MV_PROD/RETENTION/RAW_DATA/2026/9/11/11/ICE_EUA_FUT_20260911110207731.json (32.2 KB)
+45	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+11/09/2026 01:00:01 (Fri)
+→ delivered +6m 46s
+MV_PROD/RETENTION/RAW_DATA/2026/9/11/1/ICE_EUA_FUT_20260911010001509.json (29.1 KB)
+41	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+10/09/2026 21:00:17 (Thu)
+→ delivered +9m 25s
+MV_PROD/RETENTION/RAW_DATA/2026/9/10/21/ICE_EUA_FUT_20260910210017116.json (4.3 KB)
+6	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+10/09/2026 19:00:02 (Thu)
+→ delivered +11m 49s
+MV_PROD/RETENTION/RAW_DATA/2026/9/10/19/ICE_EUA_FUT_20260910190001500.json (500.1 KB)
+36	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+10/09/2026 18:00:03 (Thu)
+→ delivered +33m 1s
+MV_PROD/RETENTION/RAW_DATA/2026/9/10/18/ICE_EUA_FUT_20260910180003240.json (246.5 KB)
+36	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+10/09/2026 11:00:03 (Thu)
+→ delivered +3m 49s
+MV_PROD/RETENTION/RAW_DATA/2026/9/10/11/ICE_EUA_FUT_20260910110003670.json (17.1 KB)
+24	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+10/09/2026 02:00:02 (Thu)
+→ delivered +4m 21s
+MV_PROD/RETENTION/RAW_DATA/2026/9/10/2/ICE_EUA_FUT_20260910020002468.json (12.1 KB)
+14	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+09/09/2026 23:00:02 (Wed)
+→ delivered +3m 52s
+MV_PROD/RETENTION/RAW_DATA/2026/9/9/23/ICE_EUA_FUT_20260909230002171.json (737 B)
+1	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+09/09/2026 19:00:02 (Wed)
+→ delivered +9m 51s
+MV_PROD/RETENTION/RAW_DATA/2026/9/9/19/ICE_EUA_FUT_20260909190001986.json (505.8 KB)
+36	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+09/09/2026 18:00:03 (Wed)
+→ delivered +33m 6s
+MV_PROD/RETENTION/RAW_DATA/2026/9/9/18/ICE_EUA_FUT_20260909180003315.json (242.9 KB)
+35	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+09/09/2026 12:00:01 (Wed)
+→ delivered +5m 38s
+MV_PROD/RETENTION/RAW_DATA/2026/9/9/12/ICE_EUA_FUT_20260909120000718.json (2.9 KB)
+4	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+09/09/2026 11:00:01 (Wed)
+→ delivered +3m 23s
+MV_PROD/RETENTION/RAW_DATA/2026/9/9/11/ICE_EUA_FUT_20260909110001002.json (31.5 KB)
+39	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+09/09/2026 02:00:03 (Wed)
+→ delivered +5m 33s
+MV_PROD/RETENTION/RAW_DATA/2026/9/9/2/ICE_EUA_FUT_20260909020002590.json (12.7 KB)
+18	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+08/09/2026 23:00:02 (Tue)
+→ delivered +3m 48s
+MV_PROD/RETENTION/RAW_DATA/2026/9/8/23/ICE_EUA_FUT_20260908230002388.json (2.9 KB)
+4	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+08/09/2026 19:00:01 (Tue)
+→ delivered +19m 22s
+MV_PROD/RETENTION/RAW_DATA/2026/9/8/19/ICE_EUA_FUT_20260908190001374.json (503.0 KB)
+36	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+08/09/2026 17:05:00 (Tue)
+→ delivered +11m 49s
+MV_PROD/RETENTION/RAW_DATA/2026/9/8/17/ICE_EUA_FUT_20260908170500603.json (241.5 KB)
+35	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+08/09/2026 11:00:00 (Tue)
+→ delivered +3m 32s
+MV_PROD/RETENTION/RAW_DATA/2026/9/8/11/ICE_EUA_FUT_20260908110000698.json (29.4 KB)
+41	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+08/09/2026 09:00:01 (Tue)
+→ delivered +2m 53s
+MV_PROD/RETENTION/RAW_DATA/2026/9/8/9/ICE_EUA_FUT_20260908090001429.json (3.6 KB)
+5	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+08/09/2026 07:01:24 (Tue)
+→ delivered +1m 15s
+MV_PROD/RETENTION/RAW_DATA/2026/9/8/7/ICE_EUA_FUT_20260908070124267.json (8.6 KB)
+12	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+08/09/2026 04:00:01 (Tue)
+→ delivered +2m 38s
+MV_PROD/RETENTION/RAW_DATA/2026/9/8/4/ICE_EUA_FUT_20260908040001255.json (19.3 KB)
+22	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+08/09/2026 02:00:03 (Tue)
+→ delivered +4m 16s
+MV_PROD/RETENTION/RAW_DATA/2026/9/8/2/ICE_EUA_FUT_20260908020003372.json (45.5 KB)
+26	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Correction
+07/09/2026 19:02:01 (Mon)
+→ delivered +18m 27s
+MV_PROD/RETENTION/RAW_DATA/2026/9/7/19/ICE_EUA_FUT_20260907190201246.json (176.1 KB)
+26	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+07/09/2026 19:01:51 (Mon)
+→ delivered +18m 37s
+MV_PROD/RETENTION/RAW_DATA/2026/9/7/19/ICE_EUA_FUT_20260907190150753.json (502.9 KB)
+36	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+07/09/2026 11:00:01 (Mon)
+→ delivered +4m 4s
+MV_PROD/RETENTION/RAW_DATA/2026/9/7/11/ICE_EUA_FUT_20260907110000691.json (32.2 KB)
+45	—
+ICE_EUA_FUTbusinessHICEEMISS, HICEOIL	Scheduled
+06/09/2026 23:00:02 (Sun)
+→ delivered +3m 23s
+MV_PROD/RETENTION/RAW_DATA/2026/9/6/23/ICE_EUA_FUT_20260906230002066.json (14.9 KB)
+21	—</textarea>
+    <div class="toggle-row">
+      <span class="toggle-label">Include</span>
+      <div class="seg-toggle" id="modeToggle">
+        <button type="button" class="seg-btn active" data-mode="both">Both</button>
+        <button type="button" class="seg-btn" data-mode="scheduled">Scheduled only</button>
+        <button type="button" class="seg-btn" data-mode="corrections">Corrections only</button>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" id="analyzeBtn" type="button">Analyze</button>
+      <button class="btn-ghost" id="clearBtn" type="button">Clear</button>
+      <span class="hint" style="color:var(--text-muted);font-size:12.5px;">Sample data above is the rows you pasted in chat — replace it with anything else.</span>
+    </div>
+    <div class="method" id="methodBkw" hidden><b>BKW view:</b> these rows have no model counts or S3 paths, so this view only looks at arrival times. Each day, an hour counts once (its last delivery). An hour is <b>Recurring</b> when it shows up on at least half the days; otherwise <b>Occasional</b>. "Time seen" is the earliest to latest arrival in that hour, so you can see the usual window. The Include toggle still works here.</div>
+    <div class="method" id="methodEni"><b>How hours get flagged:</b> every row is grouped by dataset and by calendar day. For each day, only the last delivery in a given hour counts (a correction that lands after the scheduled one wins). An hour is <b>Recurring</b> once it shows up on at least half the days in the paste — everything below that is <b>Occasional</b>, i.e. ad-hoc. "Typical models" is the most common count seen at that hour, with the full spread alongside it. <b>Corrections</b> counts how many of those days had a correction land at that same hour (whether or not a scheduled delivery also happened that day). Use the <b>Include</b> toggle above to rerun the whole analysis on only Scheduled rows or only Correction rows — useful for seeing what each one looks like on its own, with the other excluded entirely.</div>
+  </div>
+
+  <div id="output"></div>
+</div>
+
+<script>
+  function $(sel){ return document.querySelector(sel); }
+  let modeFilter = 'both';
+  let client = 'ENI';
+
+  const BKW_SAMPLE = `OMIEIA15 Scheduled 15/10/2026 21:29:09 (Thu) OMIEIA15_20261015212909708.xml —
+OMIEIA15 Scheduled 15/10/2026 20:30:36 (Thu) OMIEIA15_20261015203036299.xml —
+OMIEIA15 Scheduled 15/10/2026 16:52:26 (Thu) OMIEIA15_20261015165226093.xml —
+OMIEIA15 Scheduled 15/10/2026 15:50:27 (Thu) OMIEIA15_20261015155027247.xml —
+OMIEIA15 Scheduled 15/10/2026 09:03:26 (Thu) OMIEIA15_20261015090326463.xml —
+OMIEIA15 Scheduled 14/10/2026 20:49:22 (Wed) OMIEIA15_20261014204922535.xml —
+OMIEIA15 Scheduled 14/10/2026 20:37:42 (Wed) OMIEIA15_20261014203742205.xml —
+OMIEIA15 Scheduled 14/10/2026 15:38:00 (Wed) OMIEIA15_20261014153800109.xml —
+OMIEIA15 Scheduled 14/10/2026 13:49:05 (Wed) OMIEIA15_20261014134905341.xml —
+OMIEIA15 Scheduled 14/10/2026 10:38:46 (Wed) OMIEIA15_20261014103846333.xml —
+OMIEIA15 Scheduled 13/10/2026 22:17:11 (Tue) OMIEIA15_20261013221711220.xml —
+OMIEIA15 Scheduled 13/10/2026 20:48:18 (Tue) OMIEIA15_20261013204818742.xml —
+OMIEIA15 Scheduled 13/10/2026 14:38:36 (Tue) OMIEIA15_20261013143836245.xml —
+OMIEIA15 Scheduled 13/10/2026 13:47:58 (Tue) OMIEIA15_20261013134758491.xml —
+OMIEIA15 Scheduled 13/10/2026 09:30:02 (Tue) OMIEIA15_20261013093001954.xml —
+OMIEIA15 Scheduled 12/10/2026 21:04:31 (Mon) OMIEIA15_20261012210431400.xml —
+OMIEIA15 Scheduled 12/10/2026 20:47:00 (Mon) OMIEIA15_20261012204659885.xml —
+OMIEIA15 Scheduled 12/10/2026 16:05:08 (Mon) OMIEIA15_20261012160508584.xml —
+OMIEIA15 Scheduled 12/10/2026 13:46:38 (Mon) OMIEIA15_20261012134638405.xml —
+OMIEIA15 Scheduled 12/10/2026 08:33:52 (Mon) OMIEIA15_20261012083352803.xml —
+OMIEIA15 Scheduled 11/10/2026 22:31:46 (Sun) OMIEIA15_20261011223146017.xml —
+OMIEIA15 Scheduled 11/10/2026 20:46:04 (Sun) OMIEIA15_20261011204604227.xml —
+OMIEIA15 Scheduled 11/10/2026 14:58:08 (Sun) OMIEIA15_20261011145808283.xml —
+OMIEIA15 Scheduled 11/10/2026 13:45:37 (Sun) OMIEIA15_20261011134537372.xml —
+OMIEIA15 Scheduled 11/10/2026 10:01:20 (Sun) OMIEIA15_20261011100120559.xml —
+OMIEIA15 Scheduled 10/10/2026 21:32:33 (Sat) OMIEIA15_20261010213232850.xml —
+OMIEIA15 Scheduled 10/10/2026 20:44:51 (Sat) OMIEIA15_20261010204451591.xml —
+OMIEIA15 Scheduled 10/10/2026 14:01:34 (Sat) OMIEIA15_20261010140134737.xml —
+OMIEIA15 Scheduled 10/10/2026 13:44:18 (Sat) OMIEIA15_20261010134418606.xml —
+OMIEIA15 Scheduled 09/10/2026 20:43:35 (Fri) OMIEIA15_20261009204335474.xml —
+OMIEIA15 Scheduled 09/10/2026 20:31:22 (Fri) OMIEIA15_20261009203122465.xml —
+OMIEIA15 Scheduled 09/10/2026 15:45:20 (Fri) OMIEIA15_20261009154519972.xml —
+OMIEIA15 Scheduled 09/10/2026 13:48:24 (Fri) OMIEIA15_20261009134824170.xml —
+OMIEIA15 Scheduled 09/10/2026 10:50:11 (Fri) OMIEIA15_20261009105011202.xml —
+OMIEIA15 Scheduled 09/10/2026 00:46:41 (Fri) OMIEIA15_20261009004641547.xml —
+OMIEIA15 Scheduled 08/10/2026 19:39:28 (Thu) OMIEIA15_20261008193928162.xml —
+OMIEIA15 Scheduled 08/10/2026 13:34:56 (Thu) OMIEIA15_20261008133456676.xml —
+OMIEIA15 Scheduled 07/10/2026 21:35:18 (Wed) OMIEIA15_20261007213517866.xml —
+OMIEIA15 Scheduled 06/10/2026 20:32:33 (Tue) OMIEIA15_20261006203233137.xml —
+OMIEIA15 Scheduled 06/10/2026 13:51:58 (Tue) OMIEIA15_20261006135157944.xml —
+OMIEIA15 Scheduled 05/10/2026 21:33:26 (Mon) OMIEIA15_20261005213326469.xml —
+OMIEIA15 Scheduled 05/10/2026 13:51:22 (Mon) OMIEIA15_20261005135121899.xml —
+OMIEIA15 Scheduled 04/10/2026 20:50:03 (Sun) OMIEIA15_20261004205003578.xml —
+OMIEIA15 Scheduled 04/10/2026 13:49:29 (Sun) OMIEIA15_20261004134929438.xml —
+OMIEIA15 Scheduled 03/10/2026 20:48:49 (Sat) OMIEIA15_20261003204849652.xml —
+OMIEIA15 Scheduled 03/10/2026 13:48:20 (Sat) OMIEIA15_20261003134820186.xml —
+OMIEIA15 Scheduled 02/10/2026 20:47:39 (Fri) OMIEIA15_20261002204739590.xml —
+OMIEIA15 Scheduled 02/10/2026 13:47:05 (Fri) OMIEIA15_20261002134705463.xml —
+OMIEIA15 Scheduled 01/10/2026 20:46:21 (Thu) OMIEIA15_20261001204621809.xml —
+OMIEIA15 Scheduled 01/10/2026 13:45:45 (Thu) OMIEIA15_20261001134545503.xml —
+OMIEIA15 Scheduled 30/09/2026 23:45:14 (Wed) OMIEIA15_20260930234514786.xml —
+OMIEIA15 Scheduled 29/09/2026 21:03:56 (Tue) OMIEIA15_20260929210356071.xml —
+OMIEIA15 Scheduled 29/09/2026 14:23:38 (Tue) OMIEIA15_20260929142338064.xml —
+OMIEIA15 Scheduled 28/09/2026 21:02:41 (Mon) OMIEIA15_20260928210240754.xml —
+OMIEIA15 Scheduled 28/09/2026 14:02:20 (Mon) OMIEIA15_20260928140220121.xml —
+OMIEIA15 Scheduled 28/09/2026 11:46:16 (Mon) OMIEIA15_20260928114616450.xml —
+OMIEIA15 Scheduled 27/09/2026 23:34:07 (Sun) OMIEIA15_20260927233407253.xml —
+OMIEIA15 Scheduled 27/09/2026 20:41:40 (Sun) OMIEIA15_20260927204140708.xml —
+OMIEIA15 Scheduled 27/09/2026 15:21:32 (Sun) OMIEIA15_20260927152131774.xml —
+OMIEIA15 Scheduled 27/09/2026 14:21:11 (Sun) OMIEIA15_20260927142111514.xml —
+OMIEIA15 Scheduled 27/09/2026 10:20:05 (Sun) OMIEIA15_20260927102005655.xml —`;
+  const clientText = { BKW: BKW_SAMPLE, ENI: null };
+
+  function parseRows(text){
+    const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+    const records = [];
+    const problems = [];
+    const fnRe = /([A-Za-z0-9_]+?)_(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})\d{2,}\.json/i;
+    for(let i=0;i<lines.length;i++){
+      const line = lines[i];
+      if(line.indexOf('.json') !== -1 && /raw_data/i.test(line)){
+        const m = line.match(fnRe);
+        if(!m){ problems.push(line); continue; }
+        const dataset = m[1];
+        const yyyy = m[2], mo = m[3], dd = m[4], HH = m[5], MM = m[6], SS = m[7];
+        let mode = null;
+        for(let j=i-1;j>=Math.max(0,i-5);j--){
+          const mm2 = lines[j].match(/Scheduled|Correction/i);
+          if(mm2){ mode = mm2[0]; break; }
+        }
+        let models = null;
+        for(let j=i+1;j<=Math.min(lines.length-1,i+3);j++){
+          const mm3 = lines[j].match(/^(\d+)\b/);
+          if(mm3){ models = parseInt(mm3[1],10); break; }
+        }
+        if(mode !== null && models !== null){
+          records.push({dataset:dataset, date: yyyy+'-'+mo+'-'+dd, hour: HH, time: HH+':'+MM+':'+SS, mode: mode, models: models});
+        } else {
+          problems.push(line + '  (could not read mode/model count nearby)');
+        }
+      }
+    }
+    return {records:records, problems:problems};
+  }
+
+  function parseBkw(text){
+    const lines = text.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+    const records = [];
+    const problems = [];
+    const dtRe = /(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/;
+    lines.forEach(function(line){
+      const ds = line.match(/^(\S+)/);
+      const mode = line.match(/Scheduled|Correction/i);
+      const dt = line.match(dtRe);
+      if(ds && mode && dt){
+        records.push({dataset: ds[1], date: dt[3]+'-'+dt[2]+'-'+dt[1], hour: dt[4], time: dt[4]+':'+dt[5]+':'+dt[6], mode: mode[0], models: null});
+      } else {
+        problems.push(line + '  (could not read dataset, mode or date)');
+      }
+    });
+    return {records: records, problems: problems};
+  }
+
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function rowHtml(h, totalDays, showCorrections){
+    const isRecurring = h.pct >= 50;
+    const badge = isRecurring
+      ? '<span class="badge good">Recurring</span>'
+      : '<span class="badge occasional">Occasional</span>';
+    const breakdown = h.breakdown.map(function(pair){
+      const v = pair[0], c = pair[1];
+      const top = (String(v) === String(h.typicalModels)) ? ' chip-top' : '';
+      return '<span class="chip'+top+'">'+v+'<span class="chip-count">×'+c+'</span></span>';
+    }).join('');
+    const corrClass = 'corr-cell' + (h.correctionDays > 0 ? ' has-corr' : '');
+    const corrNote = h.correctionDays > 0 ? 'days corrected' : 'no corrections';
+    const corrCell = showCorrections
+      ? '<td class="'+corrClass+'">'+h.correctionDays+'/'+h.days+'<span class="corr-note">'+corrNote+'</span></td>'
+      : '';
+    return '' +
+      '<tr>' +
+        '<td class="hour-cell"><span class="hour-num">'+h.hour+'</span><span class="hour-suffix">:00 UTC</span></td>' +
+        '<td class="days-cell">'+h.days+'/'+totalDays+' days<div class="bar-track"><div class="bar-fill" style="width:'+h.pct+'%"></div></div></td>' +
+        corrCell +
+        '<td>'+badge+'</td>' +
+        '<td class="chips-cell">'+breakdown+'</td>' +
+        '<td class="typical-cell">'+h.typicalModels+'<span class="typical-note">latest '+h.latestModels+' on '+h.latestDate+'</span></td>' +
+      '</tr>';
+  }
+
+  function buildDatasetCard(dataset, recs, showCorrections){
+    const dates = Array.from(new Set(recs.map(function(r){return r.date;}))).sort();
+    const minDate = dates[0], maxDate = dates[dates.length-1];
+
+    const byDateHour = {};
+    const correctionFlag = {};
+    recs.forEach(function(r){
+      const key = r.date+'|'+r.hour;
+      if(!byDateHour[key] || r.time > byDateHour[key].time) byDateHour[key] = r;
+      if(/correction/i.test(r.mode)) correctionFlag[key] = true;
+    });
+    const reps = Object.keys(byDateHour).map(function(k){return byDateHour[k];});
+
+    const byHour = {};
+    reps.forEach(function(r){
+      (byHour[r.hour] = byHour[r.hour] || []).push(r);
+    });
+
+    const hourStats = Object.keys(byHour).map(function(hour){
+      const rs = byHour[hour];
+      const counts = {};
+      rs.forEach(function(r){ counts[r.models] = (counts[r.models]||0) + 1; });
+      const ranked = Object.keys(counts).map(function(v){return [v, counts[v]];}).sort(function(a,b){return b[1]-a[1];});
+      const latest = rs.slice().sort(function(a,b){
+        const ka = a.date+' '+a.time, kb = b.date+' '+b.time;
+        return ka < kb ? 1 : -1;
+      })[0];
+      const correctionDays = rs.filter(function(r){ return correctionFlag[r.date+'|'+r.hour]; }).length;
+      return {
+        hour: hour,
+        days: rs.length,
+        pct: Math.round(rs.length/dates.length*100),
+        typicalModels: ranked[0][0],
+        breakdown: ranked,
+        latestModels: latest.models,
+        latestDate: latest.date,
+        correctionDays: correctionDays
+      };
+    }).sort(function(a,b){
+      return (b.days - a.days) || (Number(a.hour) - Number(b.hour));
+    });
+
+    const card = document.createElement('section');
+    card.className = 'dataset-card';
+
+    const head = document.createElement('header');
+    head.className = 'dataset-head';
+    head.innerHTML = '<h2>'+escapeHtml(dataset)+'</h2>' +
+      '<div class="dataset-meta">'+dates.length+' day'+(dates.length!==1?'s':'')+' of data · '+minDate+' → '+maxDate+' · '+recs.length+' rows parsed</div>';
+    card.appendChild(head);
+
+    const scroll = document.createElement('div');
+    scroll.className = 'table-scroll';
+    const corrHeader = showCorrections ? '<th>Corrections</th>' : '';
+    scroll.innerHTML = '' +
+      '<table class="hour-table">' +
+        '<thead><tr><th>Hour</th><th>Seen on</th>'+corrHeader+'<th>Status</th><th>Model counts seen</th><th>Typical</th></tr></thead>' +
+        '<tbody>'+hourStats.map(function(h){return rowHtml(h, dates.length, showCorrections);}).join('')+'</tbody>' +
+      '</table>';
+    card.appendChild(scroll);
+
+    return card;
+  }
+
+  function buildBkwCard(dataset, recs, showCorrections){
+    const dates = Array.from(new Set(recs.map(function(r){return r.date;}))).sort();
+    const byDateHour = {};
+    const correctionFlag = {};
+    recs.forEach(function(r){
+      const key = r.date+'|'+r.hour;
+      if(!byDateHour[key] || r.time > byDateHour[key].time) byDateHour[key] = r;
+      if(/correction/i.test(r.mode)) correctionFlag[key] = true;
+    });
+    const reps = Object.keys(byDateHour).map(function(k){return byDateHour[k];});
+    const byHour = {};
+    reps.forEach(function(r){ (byHour[r.hour] = byHour[r.hour] || []).push(r); });
+    const stats = Object.keys(byHour).map(function(hour){
+      const rs = byHour[hour];
+      const times = rs.map(function(r){return r.time;}).sort();
+      const corrDays = rs.filter(function(r){ return correctionFlag[r.date+'|'+r.hour]; }).length;
+      return {hour: hour, days: rs.length, pct: Math.round(rs.length/dates.length*100), correctionDays: corrDays, first: times[0], last: times[times.length-1]};
+    }).sort(function(a,b){ return (b.days - a.days) || (Number(a.hour) - Number(b.hour)); });
+
+    const card = document.createElement('section');
+    card.className = 'dataset-card';
+    const head = document.createElement('header');
+    head.className = 'dataset-head';
+    head.innerHTML = '<h2>'+escapeHtml(dataset)+'</h2>' +
+      '<div class="dataset-meta">'+dates.length+' day'+(dates.length!==1?'s':'')+' of data · '+dates[0]+' → '+dates[dates.length-1]+' · '+recs.length+' rows parsed</div>';
+    card.appendChild(head);
+
+    const corrHeader = showCorrections ? '<th>Corrections</th>' : '';
+    const rows = stats.map(function(h){
+      const badge = h.pct >= 50
+        ? '<span class="badge good">Recurring</span>'
+        : '<span class="badge occasional">Occasional</span>';
+      const corrCell = showCorrections
+        ? '<td class="corr-cell'+(h.correctionDays>0?' has-corr':'')+'">'+h.correctionDays+'/'+h.days+'<span class="corr-note">'+(h.correctionDays>0?'days corrected':'no corrections')+'</span></td>'
+        : '';
+      const range = (h.first === h.last)
+        ? h.first.slice(0,5)
+        : h.first.slice(0,5)+' – '+h.last.slice(0,5);
+      return '<tr>' +
+        '<td class="hour-cell"><span class="hour-num">'+h.hour+'</span><span class="hour-suffix">:00 UTC</span></td>' +
+        '<td class="days-cell">'+h.days+'/'+dates.length+' days<div class="bar-track"><div class="bar-fill" style="width:'+h.pct+'%"></div></div></td>' +
+        corrCell +
+        '<td>'+badge+'</td>' +
+        '<td class="typical-cell">'+range+'<span class="typical-note">time seen (UTC)</span></td>' +
+      '</tr>';
+    }).join('');
+
+    const scroll = document.createElement('div');
+    scroll.className = 'table-scroll';
+    scroll.innerHTML = '<table class="hour-table"><thead><tr><th>Hour</th><th>Seen on</th>'+corrHeader+'<th>Status</th><th>Time seen</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    card.appendChild(scroll);
+    return card;
+  }
+
+  function render(records, problems, totalParsed){
+    const output = $('#output');
+    output.innerHTML = '';
+
+    const showCorrections = (modeFilter === 'both');
+    const filterLabel = modeFilter === 'scheduled' ? 'Scheduled only' : (modeFilter === 'corrections' ? 'Corrections only' : null);
+
+    if(records.length === 0){
+      const msg = (totalParsed > 0)
+        ? 'No rows left after filtering to "'+filterLabel+'". Try switching the toggle back to Both.'
+        : 'No rows recognized yet. Paste delivery-log rows and click Analyze.';
+      output.innerHTML = '<p class="empty">'+msg+'</p>';
+      return;
+    }
+
+    const byDataset = {};
+    records.forEach(function(r){ (byDataset[r.dataset] = byDataset[r.dataset] || []).push(r); });
+    const datasetNames = Object.keys(byDataset);
+
+    const summary = document.createElement('div');
+    summary.className = 'run-summary';
+    let summaryHtml = filterLabel
+      ? '<span>'+records.length+' of '+totalParsed+' rows match “'+filterLabel+'”</span>'
+      : '<span>'+records.length+' rows parsed</span>';
+    summaryHtml += '<span aria-hidden="true">·</span><span>'+datasetNames.length+' dataset'+(datasetNames.length!==1?'s':'')+'</span>';
+    if(problems.length){
+      summaryHtml += '<span aria-hidden="true">·</span><span class="warn">'+problems.length+' line'+(problems.length!==1?'s':'')+' skipped</span>';
+    }
+    summary.innerHTML = summaryHtml;
+    output.appendChild(summary);
+
+    datasetNames.forEach(function(dataset){
+      output.appendChild(client === 'BKW'
+        ? buildBkwCard(dataset, byDataset[dataset], showCorrections)
+        : buildDatasetCard(dataset, byDataset[dataset], showCorrections));
+    });
+
+    if(problems.length){
+      const det = document.createElement('details');
+      det.className = 'problems';
+      det.innerHTML = '<summary>'+problems.length+' unrecognized line'+(problems.length!==1?'s':'')+'</summary>' +
+        problems.map(function(p){ return '<div class="problem-line">'+escapeHtml(p)+'</div>'; }).join('');
+      output.appendChild(det);
+    }
+  }
+
+  function analyze(){
+    const text = $('#input').value;
+    const parsed = (client === 'BKW') ? parseBkw(text) : parseRows(text);
+    let filtered = parsed.records;
+    if(modeFilter === 'scheduled') filtered = parsed.records.filter(function(r){ return /scheduled/i.test(r.mode); });
+    else if(modeFilter === 'corrections') filtered = parsed.records.filter(function(r){ return /correction/i.test(r.mode); });
+    render(filtered, parsed.problems, parsed.records.length);
+  }
+
+  $('#analyzeBtn').addEventListener('click', analyze);
+  $('#clearBtn').addEventListener('click', function(){
+    $('#input').value = '';
+    $('#output').innerHTML = '';
+    $('#input').focus();
+  });
+
+  Array.prototype.slice.call(document.querySelectorAll('#modeToggle .seg-btn')).forEach(function(btn){
+    btn.addEventListener('click', function(){
+      Array.prototype.slice.call(document.querySelectorAll('#modeToggle .seg-btn')).forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      modeFilter = btn.getAttribute('data-mode');
+      analyze();
+    });
+  });
+
+  Array.prototype.slice.call(document.querySelectorAll('#clientToggle .seg-btn')).forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const next = btn.getAttribute('data-client');
+      if(next === client) return;
+      clientText[client] = $('#input').value;
+      client = next;
+      $('#input').value = clientText[client] || '';
+      Array.prototype.slice.call(document.querySelectorAll('#clientToggle .seg-btn')).forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      $('#methodEni').hidden = (client !== 'ENI');
+      $('#methodBkw').hidden = (client !== 'BKW');
+      analyze();
+    });
+  });
+
+  analyze();
+</script>
